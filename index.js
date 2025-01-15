@@ -33,15 +33,33 @@ async function run() {
         const result= await foodCollection.find().toArray();
         res.status(200).send(result)
     })
+
+    app.post("/foods",async(req,res)=>{
+      const food= req?.body;
+      const result= await foodCollection.insertOne(food);
+      res.send(result).status(200)
+    })
     // cartCollection related CRUD operations
     app.get('/carts',async(req,res)=>{
       const result= await cartCollection.find().toArray();
       res.status(200).send(result)
     })
+
+    app.post("/carts",async(req,res)=>{
+      const cart= req?.body;
+      const result= await cartCollection.insertOne(cart);
+      res.send(result).status(200)
+    })
     // reviewCollection related CRUD operations
     app.get('/reviews',async(req,res)=>{
       const result= await reviewCollection.find().toArray();
       res.status(200).send(result)
+    })
+
+    app.post("/reviews",async(req,res)=>{
+      const review= req?.body;
+      const result= await reviewCollection.insertOne(review);
+      res.send(result).status(200)
     })
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
