@@ -24,12 +24,24 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const database = client.db("BistroDB");
+    // database collection
     const foodCollection = database.collection("foods");
+    const cartCollection = database.collection("carts");
     const reviewCollection = database.collection("reviews");
-    // Send a ping to confirm a successful connection
+    // foodCollection related CRUD operations
     app.get("/foods",async(req,res)=>{
         const result= await foodCollection.find().toArray();
-        res.send(result)
+        res.status(200).send(result)
+    })
+    // cartCollection related CRUD operations
+    app.get('/carts',async(req,res)=>{
+      const result= await cartCollection.find().toArray();
+      res.status(200).send(result)
+    })
+    // reviewCollection related CRUD operations
+    app.get('/reviews',async(req,res)=>{
+      const result= await reviewCollection.find().toArray();
+      res.status(200).send(result)
     })
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
