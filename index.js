@@ -1,13 +1,13 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const port = 5000;
 require("dotenv").config();
 // middleweres
 app.use(cors());
 app.use(express.json());
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.6uwuu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -29,6 +29,14 @@ async function run() {
     const foodCollection = database.collection("foods");
     const cartCollection = database.collection("carts");
     const reviewCollection = database.collection("reviews");
+    // jwt token generate
+    app.post("/jwt", async (req, res) => {
+      const user = req?.body;
+      const secret = process?.env?.TOKEN_SECRET;
+      const token = jwt.sign(user, secret, {
+        expiresIn: "1h",
+      });
+    });
     // userCollection related CRUD operations
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -50,6 +58,17 @@ async function run() {
       const userId = req.params.id;
       const query = { _id: new ObjectId(userId) };
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.patch("/user/:id", async (req, res) => {
+      const userId = req.params.id;
+      const filter = { _id: new ObjectId(userId) };
+      const updatedRole = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedRole);
       res.send(result);
     });
     // foodCollection related CRUD operations
