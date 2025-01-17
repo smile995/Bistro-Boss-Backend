@@ -45,6 +45,13 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
+
+    app.delete("/users/:id", async (req, res) => {
+      const userId = req.params.id;
+      const query = { _id: new ObjectId(userId) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
     // foodCollection related CRUD operations
     app.get("/foods", async (req, res) => {
       const result = await foodCollection.find().toArray();
