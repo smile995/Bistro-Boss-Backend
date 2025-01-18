@@ -36,6 +36,7 @@ async function run() {
       const token = jwt.sign(user, secret, {
         expiresIn: "1h",
       });
+      res.send({ token });
     });
     // userCollection related CRUD operations
     app.post("/users", async (req, res) => {
