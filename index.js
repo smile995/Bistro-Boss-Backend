@@ -29,6 +29,22 @@ async function run() {
     const foodCollection = database.collection("foods");
     const cartCollection = database.collection("carts");
     const reviewCollection = database.collection("reviews");
+    // jwt token verify middlewere
+    const varifyToken = async (req, res, next) => {
+      const tokenBeerer = req?.headers?.authorization;
+      const token = tokenBeerer.split(" ")[1];
+      if (token) {
+        jwt.verify(token, process?.env?.TOKEN_SECRET, (error, decoded) => {
+          if (decoded) {
+            next();
+          } else if (error) {
+            res.send("Forbidden Access" || error.message).status(401);
+          }
+        });
+      } else {
+        return res.send("Forbidden Access").status(401);
+      }
+    };
     // jwt token generate
     app.post("/jwt", async (req, res) => {
       const user = req?.body;
@@ -50,7 +66,7 @@ async function run() {
         res.send({ message: "User already exist in database" });
       }
     });
-    app.get("/users", async (req, res) => {
+    app.get("/users", varifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
