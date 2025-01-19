@@ -36,6 +36,7 @@ async function run() {
       if (token) {
         jwt.verify(token, process?.env?.TOKEN_SECRET, (error, decoded) => {
           if (decoded) {
+            req.decoded = decoded;
             next();
           } else if (error) {
             res.send("Forbidden Access" || error.message).status(401);
@@ -43,6 +44,18 @@ async function run() {
         });
       } else {
         return res.send("Forbidden Access").status(401);
+      }
+    };
+    // admin varifing middlewre
+    const varifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.send({ message: "forbidden acess" }).status(403);
+      } else {
+        next();
       }
     };
     // jwt token generate
@@ -66,18 +79,18 @@ async function run() {
         res.send({ message: "User already exist in database" });
       }
     });
-    app.get("/users", varifyToken, async (req, res) => {
+    app.get("/users", varifyToken, varifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
-    app.delete("/users/:id", async (req, res) => {
+    app.delete("/users/:id", varifyToken, varifyAdmin, async (req, res) => {
       const userId = req.params.id;
       const query = { _id: new ObjectId(userId) };
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
-    app.patch("/user/:id", async (req, res) => {
+    app.patch("/user/:id", varifyToken, varifyAdmin, async (req, res) => {
       const userId = req.params.id;
       const filter = { _id: new ObjectId(userId) };
       const updatedRole = {
@@ -87,6 +100,19 @@ async function run() {
       };
       const result = await userCollection.updateOne(filter, updatedRole);
       res.send(result);
+    });
+
+    app.get("/users/admin/:email", varifyToken, async (req, res) => {
+      const userEmail = req?.params?.email;
+      const tokenEmail = req?.decoded?.email;
+      if (userEmail !== tokenEmail) {
+        return res.send({ message: "unauthorized access" });
+      } else {
+        const query = { email: userEmail };
+        const user = await userCollection.findOne(query);
+        isAdmin = user?.role === "admin";
+        res.send(isAdmin);
+      }
     });
     // foodCollection related CRUD operations
     app.get("/foods", async (req, res) => {
