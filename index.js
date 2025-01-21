@@ -70,7 +70,8 @@ async function run() {
     // userCollection related CRUD operations
     app.post("/users", async (req, res) => {
       const user = req.body;
-      const query = { email: user.email };
+
+      const query = { email: user?.email };
       const isExist = await userCollection.findOne(query);
       if (!isExist) {
         const result = await userCollection.insertOne(user);
@@ -124,6 +125,13 @@ async function run() {
       const food = req?.body;
       const result = await foodCollection.insertOne(food);
       res.send(result).status(200);
+    });
+
+    app.delete("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodCollection.deleteOne(query);
+      res.send(result);
     });
     // cartCollection related CRUD operations
     app.get("/carts", async (req, res) => {
