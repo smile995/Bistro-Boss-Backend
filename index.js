@@ -126,6 +126,22 @@ async function run() {
       const result = await foodCollection.findOne(query);
       res.send(result);
     });
+    app.patch("/foods/:id", async (req, res) => {
+      const  id  = req?.params.id
+      const data = req?.body; 
+      const filter = { _id: new ObjectId(id) }; 
+      const updatedDoc = {
+        $set: {
+          name: data?.name,
+          price: data?.price,
+          category: data?.category,
+          image: data?.image,
+          recipe: data?.recipe,
+        },
+      };
+      const result= await foodCollection.updateOne(filter,updatedDoc);
+      res.send(result)
+    });
 
     app.post("/foods", async (req, res) => {
       const food = req?.body;
