@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+// const stripe = require('stripe')(process.env.Strip_secret_key)
+
 const port = 5000;
 require("dotenv").config();
 // middleweres
@@ -120,13 +122,13 @@ async function run() {
       const result = await foodCollection.find().toArray();
       res.status(200).send(result);
     });
-    app.get("/foods/:id", async (req, res) => {
+    app.get("/foods/:id",varifyToken,varifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await foodCollection.findOne(query);
       res.send(result);
     });
-    app.patch("/foods/:id", async (req, res) => {
+    app.patch("/foods/:id",varifyToken,varifyAdmin, async (req, res) => {
       const  id  = req?.params.id
       const data = req?.body; 
       const filter = { _id: new ObjectId(id) }; 
@@ -143,34 +145,34 @@ async function run() {
       res.send(result)
     });
 
-    app.post("/foods", async (req, res) => {
+    app.post("/foods",varifyToken,varifyAdmin, async (req, res) => {
       const food = req?.body;
       const result = await foodCollection.insertOne(food);
       res.send(result).status(200);
     });
 
-    app.delete("/foods/:id", async (req, res) => {
+    app.delete("/foods/:id",varifyToken,varifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await foodCollection.deleteOne(query);
       res.send(result);
     });
     // cartCollection related CRUD operations
-    app.get("/carts", async (req, res) => {
+    app.get("/carts",varifyToken, async (req, res) => {
       const email = req?.query?.email;
       const query = { userEmail: email };
       const result = await cartCollection.find(query).toArray();
       res.status(200).send(result);
     });
 
-    app.delete("/carts/:id", async (req, res) => {
+    app.delete("/carts/:id",varifyToken, async (req, res) => {
       const id = req?.params?.id;
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteMany(query);
       res.status(200).send(result);
     });
 
-    app.post("/carts", async (req, res) => {
+    app.post("/carts",varifyToken, async (req, res) => {
       const cart = req?.body;
       const result = await cartCollection.insertOne(cart);
       res.send(result).status(200);
@@ -181,7 +183,7 @@ async function run() {
       res.status(200).send(result);
     });
 
-    app.post("/reviews", async (req, res) => {
+    app.post("/reviews",varifyToken, async (req, res) => {
       const review = req?.body;
       const result = await reviewCollection.insertOne(review);
       res.send(result).status(200);
