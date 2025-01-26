@@ -30,6 +30,7 @@ async function run() {
     const foodCollection = database.collection("foods");
     const cartCollection = database.collection("carts");
     const reviewCollection = database.collection("reviews");
+    const paymentCollection = database.collection("payments");
     // jwt token verify middlewere
     const varifyToken = async (req, res, next) => {
       const tokenBeerer = req?.headers?.authorization;
@@ -190,6 +191,21 @@ async function run() {
       const cart = req?.body;
       const result = await cartCollection.insertOne(cart);
       res.send(result).status(200);
+    });
+
+    // payment related apis
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const { cartIds } = payment;
+      const filter = {
+        _id: {
+          $in: cartIds.map((id) => new ObjectId(id)),
+        },
+      };
+      const deletedResult = await cartCollection.deleteMany(filter);
+
+      const paymentResult = await paymentCollection.insertOne(payment);
+      res.send({ paymentResult, deletedResult });
     });
     // reviewCollection related CRUD operations
     app.get("/reviews", async (req, res) => {
