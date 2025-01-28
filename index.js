@@ -207,6 +207,13 @@ async function run() {
       const paymentResult = await paymentCollection.insertOne(payment);
       res.send({ paymentResult, deletedResult });
     });
+
+    app.get('/payments/:email', async(req,res)=>{
+      const {email}= req.params
+      const query={email:email}
+      const result= await paymentCollection.find(query).toArray();
+      res.send(result)
+    })
     // reviewCollection related CRUD operations
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
@@ -217,6 +224,15 @@ async function run() {
       const review = req?.body;
       const result = await reviewCollection.insertOne(review);
       res.send(result).status(200);
+    });
+    // user and admin state to showing home page
+    app.get("/user-state/:email", async (req, res) => {
+      const { email } = req.params;
+      const query = { email: email };
+      const orders= await paymentCollection.countDocuments(query)
+      const reviews=await reviewCollection.countDocuments(query)
+      const menus= await foodCollection.estimatedDocumentCount()
+      res.send({orders,reviews,menus})
     });
     // await client.db("admin").command({ ping: 1 });
     console.log(
