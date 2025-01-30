@@ -93,13 +93,13 @@ async function run() {
       const result = await tableCollection.insertOne(bookingInfo);
       res.send(result);
     });
-    app.get("/tables/:email",varifyToken, async (req, res) => {
+    app.get("/tables/:email", varifyToken, async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
       const result = await tableCollection.find(query).toArray();
       res.send(result);
     });
-    app.get("/tables",varifyToken,varifyAdmin, async (req, res) => {
+    app.get("/tables", varifyToken, varifyAdmin, async (req, res) => {
       const result = await tableCollection.find().toArray();
       res.send(result);
     });
@@ -109,7 +109,7 @@ async function run() {
       const result = await tableCollection.deleteOne(query);
       res.send(result);
     });
-    app.patch("/tables/:id",varifyToken,varifyAdmin, async (req, res) => {
+    app.patch("/tables/:id", varifyToken, varifyAdmin, async (req, res) => {
       const { status } = req.body;
       const { id } = req.params;
       const filter = { _id: new ObjectId(id) };
@@ -280,6 +280,12 @@ async function run() {
       const menus = await foodCollection.estimatedDocumentCount();
       const contacts = await contactCollection.countDocuments(query);
       res.send({ orders, reviews, menus, contacts });
+    });
+    app.get("/admin-static", async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const foods = await foodCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+      res.send({ users, foods, orders });
     });
     // await client.db("admin").command({ ping: 1 });
     console.log(
