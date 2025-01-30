@@ -32,6 +32,7 @@ async function run() {
     const reviewCollection = database.collection("reviews");
     const contactCollection = database.collection("contacts");
     const paymentCollection = database.collection("payments");
+    const tableCollection = database.collection("tables");
     // jwt token verify middlewere
     const varifyToken = async (req, res, next) => {
       const tokenBeerer = req?.headers?.authorization;
@@ -85,6 +86,40 @@ async function run() {
       } catch (error) {
         res.status(500).send({ error: error.message });
       }
+    });
+    // table booking related apis
+    app.post("/tables", varifyToken, async (req, res) => {
+      const bookingInfo = req.body;
+      const result = await tableCollection.insertOne(bookingInfo);
+      res.send(result);
+    });
+    app.get("/tables/:email",varifyToken, async (req, res) => {
+      const { email } = req.params;
+      const query = { email: email };
+      const result = await tableCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/tables",varifyToken,varifyAdmin, async (req, res) => {
+      const result = await tableCollection.find().toArray();
+      res.send(result);
+    });
+    app.delete("/tables/:id", varifyToken, async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await tableCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.patch("/tables/:id",varifyToken,varifyAdmin, async (req, res) => {
+      const { status } = req.body;
+      const { id } = req.params;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: status,
+        },
+      };
+      const result = await tableCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
     // userCollection related CRUD operations
     app.post("/users", async (req, res) => {
@@ -179,10 +214,8 @@ async function run() {
       const result = await contactCollection.insertOne(message);
       res.send(result);
     });
-    app.get("/contacts/:email", varifyToken, async (req, res) => {
-      const { email } = req.params;
-      const query = { email: email };
-      const result = await contactCollection.find(query).toArray();
+    app.get("/contacts", varifyToken, varifyAdmin, async (req, res) => {
+      const result = await contactCollection.find().toArray();
       res.send(result);
     });
     // cartCollection related CRUD operations
