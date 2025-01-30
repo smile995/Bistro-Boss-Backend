@@ -23,13 +23,14 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const database = client.db("BistroDB");
     // database collection
     const userCollection = database.collection("users");
     const foodCollection = database.collection("foods");
     const cartCollection = database.collection("carts");
     const reviewCollection = database.collection("reviews");
+    const contactCollection = database.collection("contacts");
     const paymentCollection = database.collection("payments");
     // jwt token verify middlewere
     const varifyToken = async (req, res, next) => {
@@ -172,6 +173,18 @@ async function run() {
       const result = await foodCollection.deleteOne(query);
       res.send(result);
     });
+    // conatct related apis
+    app.post("/contacts", varifyToken, async (req, res) => {
+      const message = req.body;
+      const result = await contactCollection.insertOne(message);
+      res.send(result);
+    });
+    app.get("/contacts/:email", varifyToken, async (req, res) => {
+      const { email } = req.params;
+      const query = { email: email };
+      const result = await contactCollection.find(query).toArray();
+      res.send(result);
+    });
     // cartCollection related CRUD operations
     app.get("/carts", varifyToken, async (req, res) => {
       const email = req?.query?.email;
@@ -208,12 +221,12 @@ async function run() {
       res.send({ paymentResult, deletedResult });
     });
 
-    app.get('/payments/:email', async(req,res)=>{
-      const {email}= req.params
-      const query={email:email}
-      const result= await paymentCollection.find(query).toArray();
-      res.send(result)
-    })
+    app.get("/payments/:email", varifyToken, async (req, res) => {
+      const { email } = req.params;
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
     // reviewCollection related CRUD operations
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
@@ -229,10 +242,11 @@ async function run() {
     app.get("/user-state/:email", async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
-      const orders= await paymentCollection.countDocuments(query)
-      const reviews=await reviewCollection.countDocuments(query)
-      const menus= await foodCollection.estimatedDocumentCount()
-      res.send({orders,reviews,menus})
+      const orders = await paymentCollection.countDocuments(query);
+      const reviews = await reviewCollection.countDocuments(query);
+      const menus = await foodCollection.estimatedDocumentCount();
+      const contacts = await contactCollection.countDocuments(query);
+      res.send({ orders, reviews, menus, contacts });
     });
     // await client.db("admin").command({ ping: 1 });
     console.log(
